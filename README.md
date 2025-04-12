@@ -21,7 +21,7 @@
 ### 🛠 Tech Stack
 
 - **Android (Kotlin)**
-- **Juspay TPAPT SDK**
+- **Juspay TPAP SDK**
 - **XML UI**
 - **RESTful APIs**
 
