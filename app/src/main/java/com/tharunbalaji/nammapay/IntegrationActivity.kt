@@ -164,7 +164,7 @@ class IntegrationActivity : AppCompatActivity() {
                         Toast.makeText(this@IntegrationActivity, "Successfully initiated", Toast.LENGTH_SHORT).show()
 
                         if (innerPayload != null) {
-                            if (innerPayload.getJSONObject("payload").get("status") == "success") {
+                            if (innerPayload.getJSONObject("payload").get("action") == "initiate" && innerPayload.getJSONObject("payload").get("status") == "success") {
                                 binding.btnInitiate.isEnabled = false
                                 binding.btnProcess.isEnabled = true
                                 binding.btnTerminate.isEnabled = true
@@ -174,17 +174,40 @@ class IntegrationActivity : AppCompatActivity() {
                     }
                     else if (event == "process_result") {
                         val innerPayload = jsonObject.optJSONObject("payload")
+
                         if (innerPayload != null) {
-                            val responseCode = innerPayload.optString("gatewayResponseCode")
-                                .ifEmpty { innerPayload.optJSONObject("payload")?.optString("gatewayResponseCode").orEmpty() }
-
-                            when (responseCode) {
-                                "00" -> Toast.makeText(this@IntegrationActivity, "Payment Successful", Toast.LENGTH_SHORT).show()
-                                "01" -> Toast.makeText(this@IntegrationActivity, "Payment is Pending", Toast.LENGTH_SHORT).show()
-                                else -> Toast.makeText(this@IntegrationActivity, "Payment Failed", Toast.LENGTH_SHORT).show()
-                            }
-
                             Log.d("THARUN (process_result): ", innerPayload.toString())
+
+                            val status = innerPayload.optString("status")
+                            val errorMessage = innerPayload.optString("errorMessage")
+
+                            if (status == "BACKPRESS" || errorMessage == "USER_ABORTED") {
+                                Toast.makeText(this@IntegrationActivity, "User Aborted", Toast.LENGTH_SHORT).show()
+                            }
+                            else {
+                                val nestedPayload = innerPayload.optJSONObject("payload")
+                                if (nestedPayload != null) {
+                                    val nestedStatus = nestedPayload.optString("status")
+                                    when (nestedStatus) {
+                                        "BACKPRESS" -> {
+                                            Toast.makeText(this@IntegrationActivity, "User Aborted", Toast.LENGTH_SHORT).show()
+                                        }
+                                        "SUCCESS" -> {
+                                            val responseCode = nestedPayload.optString("gatewayResponseCode")
+                                                .ifEmpty { innerPayload.optString("gatewayResponseCode").orEmpty() }
+
+                                            when (responseCode) {
+                                                "00" -> Toast.makeText(this@IntegrationActivity, "Payment Successful", Toast.LENGTH_SHORT).show()
+                                                "01" -> Toast.makeText(this@IntegrationActivity, "Payment is Pending", Toast.LENGTH_SHORT).show()
+                                                else -> Toast.makeText(this@IntegrationActivity, "Payment Failed", Toast.LENGTH_SHORT).show()
+                                            }
+                                        }
+                                        else -> {
+                                            Toast.makeText(this@IntegrationActivity, "Error occurred", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                     else if (event == "log_stream") {
@@ -390,8 +413,18 @@ class IntegrationActivity : AppCompatActivity() {
 
             when (authMethod) {
                 AuthorizationMethods.CAT -> {
-                    innerPayload.put("clientAuthToken", "tkn_493da38e22d3499cb2521bfc99e29284")
-                    innerPayload.put("orderId", "hyper562004")
+                    val orderId = "hyper" + System.currentTimeMillis().toString()
+                    innerPayload.put("orderId", orderId)
+
+                    createJuspayOrder(orderId, object : JuspayCallback {
+                        override fun onSuccess(token: String) {
+                            innerPayload.put("clientAuthToken", token)
+                            Log.d("THARUN (clientAuthToken): ", token)
+                        }
+                        override fun onError(e: Exception) {
+                            println("Error: ${e.message}")
+                        }
+                    })
                 }
 
                 AuthorizationMethods.RSA -> {
@@ -447,7 +480,7 @@ class IntegrationActivity : AppCompatActivity() {
 
     private fun callTerminate() {
         hyperServicesHolder?.terminate()
-        Toast.makeText(this@IntegrationActivity, "Terminated Successfully", Toast.LENGTH_LONG).show()
+        Toast.makeText(this@IntegrationActivity, "Terminated Successfully", Toast.LENGTH_SHORT).show()
 
         binding.btnInitiate.isEnabled = true
         binding.btnTerminate.isEnabled = false
