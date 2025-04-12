@@ -12,17 +12,15 @@
 
 - 🔐 Secure and compliant UPI stack using Juspay SDK
 - ⚡ Lightning-fast transaction flows
-- 💳 Support for multiple PSPs and banks
-- 🧩 Plug-and-play integration
-- 📱 Built with modern Android practices and Jetpack libraries
+- 💳 Support for Onboarding & Pay, Incoming Intent
+- 🧩 Adopts auth flows such as CAT, RSA & JWS
+- 📱 Built with modern Android practices and XML Library
 
 ### 🛠 Tech Stack
 
 - **Android (Kotlin)**
-- **Juspay HyperSDK**
-- **Jetpack Compose / XML UI**
-- **RSA + JWS Auth Flow**
-- **CAT & Device Binding**
+- **Juspay TPAPT SDK**
+- **XML UI**
 - **RESTful APIs**
 
 ### 🚀 Getting Started
@@ -36,5 +34,5 @@
 #### 2. Installation
 
 ```bash
-git clone https://github.com/your-org/namma-pay.git
+https://github.com/TharunBalajiSDE/nammapay.git
 cd namma-pay
