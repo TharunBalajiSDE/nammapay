@@ -11,4 +11,5 @@ object Creds {
     const val PSP_MERCHANT_ID = "HYPERUPITEST"
     const val PSP_MERCHANT_CHANNEL_ID = "HYPERUPITESTAPP"
     const val JWS_KID = "39e9c9e1-b9d4-3674-77cc-38c97ecd794b"
+    const val AUTH_KEY = "MTZBNERGRTIzREE0OTdCOTk5RkM5NUE0NTI4MDE3Og=="
 }

@@ -5,8 +5,14 @@ import android.util.Base64
 import com.nimbusds.jose.*
 import com.nimbusds.jose.crypto.RSASSASigner
 import com.tharunbalaji.nammapay.R
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.Response
+import okio.IOException
+import org.json.JSONObject
 import java.security.KeyFactory
 import java.security.PrivateKey
 import java.security.Signature
@@ -94,4 +100,47 @@ fun readPrivateString(context: Context, authMethod: AuthorizationMethods): Strin
 interface JuspayCallback {
     fun onSuccess(token: String)
     fun onError(e: Exception)
+}
+
+fun createJuspayOrder(orderId: String, callback: JuspayCallback) {
+    val client = OkHttpClient()
+
+    val requestBody = FormBody.Builder()
+        .add("order_id", orderId)
+        .add("amount", "10.00")
+        .add("currency", "INR")
+        .add("customer_id", Creds.CUSTOMER_ID)
+        .add("options.get_client_auth_token", "true")
+        .build()
+
+    val request = Request.Builder()
+        .url("https://sandbox.juspay.in/orders")
+        .header("version", "2025-04-12")
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .header("Authorization", "Basic ${Creds.AUTH_KEY}")
+        .post(requestBody)
+        .build()
+
+    client.newCall(request).enqueue(object : Callback {
+        override fun onFailure(call: Call, e: IOException) {
+            callback.onError(e)
+        }
+
+        override fun onResponse(call: Call, response: Response) {
+            response.use {
+                if (!it.isSuccessful) {
+                    callback.onError(Exception("Unexpected code: ${it.code}"))
+                    return
+                }
+
+                try {
+                    val json = JSONObject(it.body?.string() ?: "")
+                    val token = json.getJSONObject("juspay").getString("client_auth_token")
+                    callback.onSuccess(token)
+                } catch (e: Exception) {
+                    callback.onError(e)
+                }
+            }
+        }
+    })
 }

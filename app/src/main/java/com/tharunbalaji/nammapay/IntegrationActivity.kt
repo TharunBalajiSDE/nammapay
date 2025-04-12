@@ -1,35 +1,24 @@
 package com.tharunbalaji.nammapay
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import com.tharunbalaji.nammapay.databinding.ActivityMainBinding
 import com.tharunbalaji.nammapay.utils.AuthorizationMethods
 import com.tharunbalaji.nammapay.utils.Creds
 import com.tharunbalaji.nammapay.utils.JuspayCallback
+import com.tharunbalaji.nammapay.utils.createJuspayOrder
 import com.tharunbalaji.nammapay.utils.getJWSSignature
-import com.tharunbalaji.nammapay.utils.getPrivateKeyFromString
 import com.tharunbalaji.nammapay.utils.getSignedData
-import com.tharunbalaji.nammapay.utils.getUpiRequestId
 import com.tharunbalaji.nammapay.utils.readPrivateString
 import `in`.juspay.hyperinteg.HyperServiceHolder
 import `in`.juspay.hypersdk.data.JuspayResponseHandler
 import `in`.juspay.hypersdk.ui.HyperPaymentsCallbackAdapter
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.FormBody
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
-import okio.IOException
 import org.json.JSONObject
 import java.util.*
-import kotlin.math.min
 
 
 class IntegrationActivity : AppCompatActivity() {
@@ -353,7 +342,6 @@ class IntegrationActivity : AppCompatActivity() {
                     signaturePayload.put("merchantChannelId", Creds.PSP_MERCHANT_CHANNEL_ID)
                     signaturePayload.put("customerMobileNumber", "919677449189")
                     signaturePayload.put("merchantCustomerId", Creds.CUSTOMER_ID)
-                    signaturePayload.put("merchantVpa", "hyperupitest@ypay")
                     signaturePayload.put("merchantRequestId", "hyper${System.currentTimeMillis()}")
                     signaturePayload.put("timestamp", System.currentTimeMillis().toString())
 
@@ -486,47 +474,5 @@ class IntegrationActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    fun createJuspayOrder(orderId: String, callback: JuspayCallback) {
-        val client = OkHttpClient()
-
-        val requestBody = FormBody.Builder()
-            .add("order_id", orderId)
-            .add("amount", "10.00")
-            .add("currency", "INR")
-            .add("customer_id", Creds.CUSTOMER_ID)
-            .add("options.get_client_auth_token", "true")
-            .build()
-
-        val request = Request.Builder()
-            .url("https://sandbox.juspay.in/orders")
-            .header("version", "2025-04-12")
-            .header("Content-Type", "application/x-www-form-urlencoded")
-            .header("Authorization", "Basic MTZBNERGRTIzREE0OTdCOTk5RkM5NUE0NTI4MDE3Og==")
-            .post(requestBody)
-            .build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                callback.onError(e)
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                response.use {
-                    if (!it.isSuccessful) {
-                        callback.onError(Exception("Unexpected code: ${it.code}"))
-                        return
-                    }
-
-                    try {
-                        val json = JSONObject(it.body?.string() ?: "")
-                        val token = json.getJSONObject("juspay").getString("client_auth_token")
-                        callback.onSuccess(token)
-                    } catch (e: Exception) {
-                        callback.onError(e)
-                    }
-                }
-            }
-        })
-    }
 
 }
