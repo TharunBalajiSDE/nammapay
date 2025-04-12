@@ -1,7 +1,7 @@
 <div align="center"> 
-  <img src="https://github.com/user-attachments/assets/b037c1a5-14b3-4d7c-b50b-3e0247073cac" alt="Controlling Image" width="100"/>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="https://github.com/user-attachments/assets/2bece83b-2f18-41d6-8ff7-4c126261cf9c" alt="Controlling Image" width="100"/> 
+  <img src="https://github.com/user-attachments/assets/b037c1a5-14b3-4d7c-b50b-3e0247073cac" alt="Controlling Image" width="150"/>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="https://github.com/user-attachments/assets/2bece83b-2f18-41d6-8ff7-4c126261cf9c" alt="Controlling Image" width="150"/> 
 
   <h1 align="center">🚀 Namma Pay : A TPAP developed using Juspay SDK</h1>
 </div>
